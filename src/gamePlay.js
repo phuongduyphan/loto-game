@@ -22,7 +22,7 @@ class GamePlay {
       status: this.status,
       listOfGeneratedNumbers: this.listOfGeneratedNumbers,
     };
-    this.io.emit('gameplay_status_update', data);
+    this.io.emit('gameplay_update', data);
   }
 
   addNewPlayer(player) {
@@ -63,7 +63,7 @@ class GamePlay {
     }
 
     if (this.status === gameStatus.PENDING) {
-      this.endGame();
+      this.initNewGame();
     }
   }
 
@@ -77,10 +77,18 @@ class GamePlay {
     }, 3000);
   }
 
-  endGame() {
+  initNewGame() {
     clearInterval(this.intervalId);
     this.intervalId = null;
     this.listOfGeneratedNumbers = [];
+    this.emptyPlayerBoard();
+    this.status = gameStatus.PENDING;
+  }
+
+  emptyPlayerBoard() {
+    this.playerIds.forEach((id) => {
+      this.players[id].board = null;
+    });
   }
 
   getListOfRemainingNumbers() {
@@ -105,10 +113,19 @@ class GamePlay {
 
     if (checkPlayerWinStatus(this.players[id].board)) {
       this.players[id].status = playerStatus.WIN;
+      this.updatePlayerLoseStatus();
       this.updateWinMoney();
-      this.updateGameStatus(gameStatus.PENDING);
       this.emitStateChange();
+      this.updateGameStatus(gameStatus.PENDING);
     }
+  }
+
+  updatePlayerLoseStatus() {
+    this.playerIds.forEach((id) => {
+      if (this.players[id].status !== playerStatus.WIN) {
+        this.players[id].status = playerStatus.LOSE;
+      }
+    });
   }
 
   updateWinMoney() {

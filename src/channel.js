@@ -18,6 +18,10 @@ module.exports = (io) => {
       cb(newPlayer);
     });
 
+    socket.on('gameplay_update', () => {
+      gamePlay.emitStateChange();
+    });
+
     socket.on('init_board', (cb) => {
       const board = gamePlay.addPlayerBoard(socket.id);
       cb(board);
