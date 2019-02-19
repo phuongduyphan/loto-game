@@ -2,6 +2,8 @@ const _ = require('lodash');
 
 const gameStatus = require('./gameStatus');
 const playerStatus = require('./playerStatus');
+const appConfig = require('./appConfig');
+const { checkPlayerWaitStatus, checkPlayerWinStatus, generateBoard } = require('./board');
 
 class GamePlay {
   constructor(io) {
@@ -9,7 +11,18 @@ class GamePlay {
     this.players = {};
     this.playerIds = [];
     this.status = gameStatus.PENDING;
-    this.listOfNumbers = [];
+    this.listOfGeneratedNumbers = [];
+    this.intervalId = null;
+  }
+
+  emitStateChange() {
+    const data = {
+      players: this.players,
+      playerIds: this.playerIds,
+      status: this.status,
+      listOfGeneratedNumbers: this.listOfGeneratedNumbers,
+    };
+    this.io.emit('gameplay_status_update', data);
   }
 
   addNewPlayer(player) {
@@ -18,24 +31,94 @@ class GamePlay {
       ...this.players,
       [player.id]: player,
     };
+    this.emitStateChange();
+  }
+
+  addPlayerBoard(id) {
+    const board = generateBoard();
+    this.players[id].board = board;
+
+    return board;
   }
 
   checkAllReady() {
     return _.every(this.players, { status: playerStatus.READY });
   }
 
-  updateStatus(status) {
-    this.status = status;
-    if (this.status === gameStatus.START) {
-      this.startGame();
+  updateAndCheckReady(id) {
+    this.players[id].status = playerStatus.READY;
+    this.emitStateChange();
+
+    if (this.checkAllReady()) {
+      this.updateGameStatus(gameStatus.START);
     }
   }
 
-  updateAndCheckReady(id) {
-    this.players[id].status = playerStatus.READY;
-    if (this.checkAllReady()) {
-      this.updateStatus(gameStatus.START);
+  updateGameStatus(status) {
+    this.status = status;
+    this.emitStateChange();
+
+    if (this.status === gameStatus.START) {
+      this.startGame();
     }
+
+    if (this.status === gameStatus.PENDING) {
+      this.endGame();
+    }
+  }
+
+  startGame() {
+    this.intervalId = setInterval(() => {
+      const listOfRemainingNumbers = this.getListOfRemainingNumbers();
+      const generatedNumber = _.sample(listOfRemainingNumbers);
+      this.listOfGeneratedNumbers.push(generatedNumber);
+
+      this.io.emit('new_number', generatedNumber);
+    }, 3000);
+  }
+
+  endGame() {
+    clearInterval(this.intervalId);
+    this.intervalId = null;
+    this.listOfGeneratedNumbers = [];
+  }
+
+  getListOfRemainingNumbers() {
+    const listOfRemainingNumbers = [];
+    for (let i = 1; i <= appConfig.totalNum; i += 1) {
+      listOfRemainingNumbers.push(i);
+    }
+
+    return listOfRemainingNumbers.filter(element => (
+      !this.listOfGeneratedNumbers.includes(element)
+    ));
+  }
+
+  updatePlayerBoard(socket, cell) {
+    const { id } = socket;
+    this.players[id].board[cell.row][cell.col] = cell;
+
+    if (checkPlayerWaitStatus(this.players[id].board)) {
+      this.players[id].status = playerStatus.WAIT;
+      this.emitStateChange();
+    }
+
+    if (checkPlayerWinStatus(this.players[id].board)) {
+      this.players[id].status = playerStatus.WIN;
+      this.updateWinMoney();
+      this.updateGameStatus(gameStatus.PENDING);
+      this.emitStateChange();
+    }
+  }
+
+  updateWinMoney() {
+    this.playerIds.forEach((id) => {
+      if (this.players[id].status === playerStatus.WIN) {
+        this.players[id].money += appConfig.betLevel;
+      } else {
+        this.players[id].money -= appConfig.betLevel;
+      }
+    });
   }
 }
 
