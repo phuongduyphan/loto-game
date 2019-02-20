@@ -34,6 +34,14 @@ class GamePlay {
     this.emitStateChange();
   }
 
+  removePlayer(id) {
+    delete this.players[id];
+    this.playerIds = this.playerIds.filter(element => (
+      element !== id
+    ));
+    this.emitStateChange();
+  }
+
   addPlayerBoard(id) {
     const board = generateBoard();
     this.players[id].board = board;

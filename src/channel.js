@@ -35,5 +35,9 @@ module.exports = (io) => {
       gamePlay.updatePlayerBoard(socket, cell);
     });
 
+    socket.on('disconnect', () => {
+      gamePlay.removePlayer(socket.id);
+    });
+
   });
 };
