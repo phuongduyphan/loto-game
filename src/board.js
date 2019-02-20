@@ -39,7 +39,7 @@ fs.readdir(path.join(__dirname, '/boardData'), (err, filenames) => {
 });
 
 const generateBoard = () => (
-  _.sample(listOfBoard)
+  _.cloneDeep(_.sample(listOfBoard))
 );
 
 const checkPlayerWaitStatus = (board) => {

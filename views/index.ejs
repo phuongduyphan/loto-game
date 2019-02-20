@@ -19,9 +19,9 @@
       socket.emit('new_player', { name: 'duyphan' }, (data) => {
         console.log(data);
       });
-      // socket.emit('init_board', board => {
-      //   console.log(board);
-      // });
+      socket.emit('init_board', board => {
+        console.log(board);
+      });
       // socket.emit('player_ready');
     });
 
