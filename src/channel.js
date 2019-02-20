@@ -42,6 +42,14 @@ module.exports = (io) => {
       gamePlay.emitStateChange();
     });
 
+    socket.on('pause_game', () => {
+      gamePlay.pauseGame();
+    });
+
+    socket.on('resume_game', () => {
+      gamePlay.startGame();
+    });
+
     socket.on('disconnect', () => {
       gamePlay.removePlayer(socket.id);
     });

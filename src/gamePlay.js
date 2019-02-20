@@ -112,6 +112,10 @@ class GamePlay {
 
   updatePlayerBoard(socket, cell) {
     const { id } = socket;
+    console.log(socket.id);
+    console.log(this.players[id]);
+    console.log(cell);
+    console.log(this.players[id].board[cell.row][cell.col]);
     this.players[id].board[cell.row][cell.col] = cell;
 
     if (checkPlayerWaitStatus(this.players[id].board)) {
@@ -144,6 +148,11 @@ class GamePlay {
         this.players[id].money -= appConfig.betLevel;
       }
     });
+  }
+
+  pauseGame() {
+    clearInterval(this.intervalId);
+    this.intervalId = null;
   }
 }
 
