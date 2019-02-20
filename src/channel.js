@@ -27,11 +27,13 @@ module.exports = (io) => {
       cb(board);
     });
 
-    socket.on('player_ready', () => {
+    socket.on('player_ready', (cb) => {
       gamePlay.updateAndCheckReady(socket.id);
+      cb();
     });
 
     socket.on('click', (cell) => {
+      console.log(cell);
       gamePlay.updatePlayerBoard(socket, cell);
     });
 

@@ -22,7 +22,49 @@
       socket.emit('init_board', board => {
         console.log(board);
       });
-      // socket.emit('player_ready');
+      socket.emit('player_ready', () => {
+        socket.emit('click', { 
+        num: '19',
+        open: true,
+        choosen: true,
+        row: 0,
+        col: 1
+      });
+
+      socket.emit('click', { 
+        num: '28',
+        open: true,
+        choosen: true,
+        row: 0,
+        col: 2
+      });
+
+      socket.emit('click', { 
+        num: '46',
+        open: true,
+        choosen: true,
+        row: 0,
+        col: 4
+      });
+
+      socket.emit('click', { 
+        num: '68',
+        open: true,
+        choosen: true,
+        row: 0,
+        col: 6
+      });
+
+      socket.emit('click', { 
+        num: '75',
+        open: true,
+        choosen: true,
+        row: 0,
+        col: 7
+      });
+      });
+      
+      
     });
 
     socket.on('new_number', (number) => {
