@@ -22,6 +22,8 @@ class GamePlay {
       status: this.status,
       listOfGeneratedNumbers: this.listOfGeneratedNumbers,
     };
+    console.log(data);
+    
     this.io.emit('gameplay_update', data);
   }
 
@@ -93,6 +95,16 @@ class GamePlay {
     this.status = gameStatus.PENDING;
   }
 
+
+  initNewGameWithId(id) {
+    clearInterval(this.intervalId);
+    this.intervalId = null;
+    this.listOfGeneratedNumbers = [];
+    this.players[id].status = playerStatus.NOT_READY;
+    this.emptyPlayerBoard();
+    this.status = gameStatus.PENDING;
+  }
+
   emptyPlayerBoard() {
     this.playerIds.forEach((id) => {
       this.players[id].board = null;
@@ -134,7 +146,7 @@ class GamePlay {
 
   updatePlayerLoseStatus() {
     this.playerIds.forEach((id) => {
-      if (this.players[id].status !== playerStatus.WIN) {
+      if (this.players[id].status !== playerStatus.WIN && this.players[id].status !== playerStatus.WAIT) {
         this.players[id].status = playerStatus.LOSE;
       }
     });

@@ -38,7 +38,7 @@ module.exports = (io) => {
     });
 
     socket.on('stop_game', () => {
-      gamePlay.initNewGame();
+      gamePlay.initNewGameWithId(socket.id);
       gamePlay.emitStateChange();
     });
 
